@@ -2,7 +2,7 @@ import React from 'react';
 import './App.css';
 import Login from './pages/Login';
 import Nav from './components/Nav';
-import { BrowserRouter, Route } from 'react-router-dom';
+import { Routes, Route, BrowserRouter } from 'react-router-dom';
 import Home from './pages/Home';
 import Register from './pages/Register';
 
@@ -15,12 +15,12 @@ function App() {
 
         {/* Form */}
       <main>
-        <BrowserRouter>
-          <Route path='/' Component={Home}></Route>
-          <Route path='/login' Component={Login}></Route>
-          <Route path='/register' Component={Register}></Route>
-        </BrowserRouter>
-        <Login />
+        <Routes>
+          <Route path='/' element={<Home />} />
+          <Route path='/login' element={<Login />} />
+          <Route path='/register' element={<Register />} />
+        </Routes>
+        
       </main>
     </div>
   );
