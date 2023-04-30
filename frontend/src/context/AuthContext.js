@@ -1,6 +1,6 @@
 import { createContext, useState, useEffect } from "react";
 import jwt_decode from "jwt-decode";
-import { Navigate, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 
 const AuthContext = createContext()
 
@@ -10,6 +10,7 @@ export const AuthProvider = ({children}) => {
 
 
     console.log('token updated')
+
     let [authTokens, setAuthTokens] = useState(()=>localStorage.getItem('authTokens') ? JSON.parse(localStorage.getItem('authTokens')) : null)
     let [user, setUser] = useState(()=>localStorage.getItem('authTokens') ? jwt_decode(localStorage.getItem('authTokens')) : null)
     let [loading, setLoading] = useState(true)
@@ -54,7 +55,7 @@ export const AuthProvider = ({children}) => {
     }
 
     let updateToken = async () => {
-        let response = await fetch('http://127.0.0.1:8000/api/token/refresh', {
+        let response = await fetch('http://127.0.0.1:8000/api/token/refresh/', {
             method:'POST',
             headers:{
                 'Content-Type':'application/json'
@@ -68,9 +69,9 @@ export const AuthProvider = ({children}) => {
         console.log(data)
 
         if(response.status === 200){
-            //setAuthTokens(data)
-            //setUser(jwt_decode(data.access))
-            //localStorage.setItem('authTokens', JSON.stringify(data))
+            setAuthTokens(data)
+            setUser(jwt_decode(data.access))
+            localStorage.setItem('authTokens', JSON.stringify(data))
         }
         else{
             setAuthTokens(null)
@@ -78,27 +79,38 @@ export const AuthProvider = ({children}) => {
             localStorage.removeItem('authTokens')
             navigate('/login')
         }
+
+        if(loading){
+            setLoading(false)
+        }
     }
 
-    useEffect(()=>{
-        let int = setInterval(()=>{
-            if(authTokens){
-                updateToken()
-            }
-        }, 2000)
-        return ()=> clearInterval(int)
-
-    }, [authTokens, loading])
 
     let contextData = {
         user:user,
+        authTokens: authTokens,
         loginUser : loginUser,
         logoutUser: logoutUser
     }
 
+    useEffect(()=>{
+        if(loading){
+            updateToken()
+        }
+
+
+        let interval = setInterval(()=>{
+            if(authTokens){
+                updateToken()
+            }
+        }, 2000)
+        return ()=> clearInterval(interval)
+
+    }, [authTokens, loading])
+
     return(
         <AuthContext.Provider value={contextData}>
-            {children}
+            {loading ? null : children}
         </AuthContext.Provider>
     )
 }
